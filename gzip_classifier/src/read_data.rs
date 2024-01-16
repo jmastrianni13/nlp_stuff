@@ -8,10 +8,7 @@ pub fn main() {
     let processed_contents = process_ag_data(contents);
     preview(&processed_contents);
     let combined_contents = combine_text(processed_contents);
-    for c in combined_contents.iter().take(5) {
-        println!("> {:?}", c);
-    }
-
+    preview(&combined_contents);
 }
 
 fn read_into_vec() -> Vec<String> {
@@ -27,7 +24,7 @@ fn read_into_vec() -> Vec<String> {
     return raw_content;
 }
 
-fn process_ag_data(raw_content: Vec<String>) -> Vec<(String, String, String)> {
+fn process_ag_data(raw_content: Vec<String>) -> Vec<Vec<String>> {
     let mut processed = Vec::new();
 
     for line in raw_content.iter() {
@@ -35,37 +32,39 @@ fn process_ag_data(raw_content: Vec<String>) -> Vec<(String, String, String)> {
         let class = parts.next().unwrap().trim_matches('"');
         let title = parts.next().unwrap().trim_matches('"');
         let intro = parts.next().unwrap().trim_matches('"');
-        processed.push((class.to_string(), title.to_string(), intro.to_string()));
+        processed.push(vec![
+            class.to_string(),
+            title.to_string(),
+            intro.to_string(),
+        ]);
     }
 
     return processed;
 }
 
-fn combine_text(contents: Vec<(String, String, String)>) -> Vec<(String, String)> {
+fn combine_text(contents: Vec<Vec<String>>) -> Vec<Vec<String>> {
     let mut combined = Vec::new();
 
     for line in contents.iter() {
-        let (class, title, intro) = line;
+        let (class, title, intro) = (&line[0], &line[1], &line[2]);
         let mut text: String = title.to_string();
         text.push_str(" ");
-        text.push_str(intro);
-        combined.push((class.to_string(), text.to_string()));
+        text.push_str(&intro);
+        combined.push(vec![class.to_string(), text.to_string()]);
     }
 
     return combined;
-
 }
 
-fn preview<T: Clone + std::hash::Hash + std::cmp::Eq + std::fmt::Debug, U: std::fmt::Debug, V: std::fmt::Debug>(
-    contents: &Vec<(T, U, V)>,
-) {
+fn preview<T: std::fmt::Debug + std::cmp::Eq + std::hash::Hash>(contents: &Vec<Vec<T>>) {
     for c in contents.iter().take(5) {
         println!("{:?}", c);
     }
-    let first_values: Vec<&T> = contents.iter().map(|(first, _, _)| first).collect();
+
     let mut counts = HashMap::new();
-    for &value in &first_values {
-        *counts.entry(value).or_insert(0) += 1;
+    for row in contents {
+        let first_element = &row[0];
+        *counts.entry(first_element).or_insert(0) += 1;
     }
     println!("class distribution: {:?}", counts);
 }
