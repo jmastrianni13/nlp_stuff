@@ -24,15 +24,16 @@ fn get_distances(target: &str, data: &Vec<read_data::CleanedNewsSample>) -> Vec<
 fn get_ncd(x: &str, y: &str) -> f64 {
     let c_x = compress_string(x).len();
     let c_y = compress_string(y).len();
-    let xy;
     let binding: String;
+    let c_xy;
     if x == y {
-        xy = x;
+        c_xy = c_x;
     } else {
-        binding = concat_strings(x, y);
-        xy = binding.as_str();
+        let mut buffer = Vec::with_capacity(x.len() + y.len());
+        buffer.extend_from_slice(x.as_bytes());
+        buffer.extend_from_slice(y.as_bytes());
+        c_xy = compress_buffer(&buffer).len();
     }
-    let c_xy = compress_string(xy).len();
 
     let min_c_x_c_y = c_x.min(c_y);
     let max_c_x_c_y = c_x.max(c_y);
@@ -40,6 +41,12 @@ fn get_ncd(x: &str, y: &str) -> f64 {
     let ncd = (c_xy - min_c_x_c_y) as f64 / max_c_x_c_y as f64;
 
     return ncd;
+}
+
+fn compress_buffer(target: &[u8]) -> Vec<u8> {
+    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+    let _ = encoder.write(target);
+    return encoder.finish().unwrap();
 }
 
 fn compress_string(target: &str) -> Vec<u8> {
