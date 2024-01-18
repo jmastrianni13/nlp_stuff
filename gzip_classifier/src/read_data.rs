@@ -7,7 +7,6 @@ pub fn main() -> Vec<CleanedNewsSample> {
     let contents = read_into_vec();
     let processed_contents = process_ag_data(contents);
     let combined_contents = combine_text(processed_contents);
-    preview(&combined_contents);
     return combined_contents;
 }
 

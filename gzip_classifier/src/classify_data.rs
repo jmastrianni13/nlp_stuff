@@ -4,19 +4,44 @@ use flate2::Compression;
 use std::io::Write;
 
 pub fn main(sample_data: &Vec<read_data::CleanedNewsSample>) {
-    let target = &sample_data[0].text;
+    // let target = &sample_data[0].text;
+    // let target = "New England Patriots Hire Mayo for HC The New England Patriots named Jerod Mayo, former first round pick, as new head coach";
+    let target = "Dow Jones drops 15% today on Unemployment News The Dow Jones Industrial Average fell today after DOL released forecasts painting a gloomy picture for unemployment for the remainder of 2023";
     let distances = get_distances(&target, sample_data);
+    let pred_class = &distances[0].class;
+    let pred_class_name = match pred_class {
+        1 => "World",
+        2 => "Sports",
+        3 => "Business",
+        4 => "Sci/Tech",
+        _ => "Unknown",
+    };
+
+    println!("{} > {}", target, pred_class_name);
 }
 
-fn get_distances(target: &str, data: &Vec<read_data::CleanedNewsSample>) -> Vec<f64> {
-    let mut distances: Vec<f64> = Vec::with_capacity(data.len());
+#[derive(Debug)]
+struct TextDistance {
+    class: u8,
+    distance: f64,
+}
+
+fn get_distances(target: &str, data: &Vec<read_data::CleanedNewsSample>) -> Vec<TextDistance> {
+    let mut distances: Vec<TextDistance> = Vec::with_capacity(data.len());
     let sample_count = &data.len();
     for (s, sample) in data.iter().enumerate() {
         let text = &sample.text;
         let ncd = get_ncd(target, &text);
-        distances.push(ncd);
+        let text_distance = TextDistance {
+            class: sample.class.clone(),
+            distance: ncd,
+        };
+        distances.push(text_distance);
         print!("   {s}\r");
     }
+    println!();
+
+    distances.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap());
 
     return distances;
 }
