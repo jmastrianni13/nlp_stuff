@@ -3,11 +3,12 @@ use std::fs;
 use std::io::BufRead;
 use std::io::BufReader;
 
-pub fn main() {
+pub fn main() -> Vec<CleanedNewsSample> {
     let contents = read_into_vec();
     let processed_contents = process_ag_data(contents);
     let combined_contents = combine_text(processed_contents);
     preview(&combined_contents);
+    return combined_contents;
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -18,9 +19,9 @@ struct NewsSample {
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
-struct CleanedNewsSample {
-    class: u8,
-    text: String,
+pub struct CleanedNewsSample {
+    pub class: u8,
+    pub text: String,
 }
 
 fn read_into_vec() -> Vec<String> {
