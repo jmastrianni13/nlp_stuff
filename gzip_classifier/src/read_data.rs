@@ -6,9 +6,21 @@ use std::io::BufReader;
 pub fn main() {
     let contents = read_into_vec();
     let processed_contents = process_ag_data(contents);
-    preview(&processed_contents);
     let combined_contents = combine_text(processed_contents);
     preview(&combined_contents);
+}
+
+#[derive(Debug, Eq, Hash, PartialEq)]
+struct NewsSample {
+    class: u8,
+    title: String,
+    intro: String,
+}
+
+#[derive(Debug, Eq, Hash, PartialEq)]
+struct CleanedNewsSample {
+    class: u8,
+    text: String,
 }
 
 fn read_into_vec() -> Vec<String> {
@@ -24,47 +36,49 @@ fn read_into_vec() -> Vec<String> {
     return raw_content;
 }
 
-fn process_ag_data(raw_content: Vec<String>) -> Vec<Vec<String>> {
+fn process_ag_data(raw_content: Vec<String>) -> Vec<NewsSample> {
     let mut processed = Vec::new();
 
     for line in raw_content.iter() {
         let mut parts = line.splitn(3, ',');
-        let class = parts.next().unwrap().trim_matches('"');
-        let title = parts.next().unwrap().trim_matches('"');
-        let intro = parts.next().unwrap().trim_matches('"');
-        processed.push(vec![
-            class.to_string(),
-            title.to_string(),
-            intro.to_string(),
-        ]);
+        let class = parts.next().unwrap().trim_matches('"').as_bytes()[0] - b'0';
+        let title = parts.next().unwrap().trim_matches('"').to_string();
+        let intro = parts.next().unwrap().trim_matches('"').to_string();
+        let sample = NewsSample {
+            class,
+            title,
+            intro,
+        };
+        processed.push(sample);
     }
 
     return processed;
 }
 
-fn combine_text(contents: Vec<Vec<String>>) -> Vec<Vec<String>> {
+fn combine_text(contents: Vec<NewsSample>) -> Vec<CleanedNewsSample> {
     let mut combined = Vec::new();
 
-    for line in contents.iter() {
-        let (class, title, intro) = (&line[0], &line[1], &line[2]);
-        let mut text: String = title.to_string();
-        text.push_str(" ");
-        text.push_str(&intro);
-        combined.push(vec![class.to_string(), text.to_string()]);
+    for sample in contents.iter() {
+        let text = format!("{} {}", sample.title, sample.intro);
+        let cleaned_sample = CleanedNewsSample {
+            class: sample.class,
+            text,
+        };
+        combined.push(cleaned_sample);
     }
 
     return combined;
 }
 
-fn preview<T: std::fmt::Debug + std::cmp::Eq + std::hash::Hash>(contents: &Vec<Vec<T>>) {
+fn preview(contents: &Vec<CleanedNewsSample>) {
     for c in contents.iter().take(5) {
         println!("{:?}", c);
     }
 
     let mut counts = HashMap::new();
-    for row in contents {
-        let first_element = &row[0];
-        *counts.entry(first_element).or_insert(0) += 1;
+    for sample in contents {
+        let class = sample.class;
+        *counts.entry(class).or_insert(0) += 1;
     }
     println!("class distribution: {:?}", counts);
 }
