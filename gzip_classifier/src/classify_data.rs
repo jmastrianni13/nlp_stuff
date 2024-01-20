@@ -5,8 +5,9 @@ use std::io::Write;
 
 pub fn main(sample_data: &Vec<read_data::CleanedNewsSample>) {
     // let target = &sample_data[0].text;
-    // let target = "New England Patriots Hire Mayo for HC The New England Patriots named Jerod Mayo, former first round pick, as new head coach";
-    let target = "Dow Jones drops 15% today on Unemployment News The Dow Jones Industrial Average fell today after DOL released forecasts painting a gloomy picture for unemployment for the remainder of 2023";
+    let target = "New England Patriots Hire Mayo for HC The New England Patriots named Jerod Mayo, former first round pick, as new head coach";
+    // let target = "Dow Jones drops 15% today on Unemployment News The Dow Jones Industrial Average fell today after DOL released forecasts painting a gloomy picture for unemployment for the remainder of 2023";
+    // let target = "More delays for NASA’s astronaut moonshots, with crew landing off until 2026  Astronauts will have to wait until next year before flying to the moon and at least two years before landing on it, under the latest round of delays announced by NASA on Tuesday.";
     let distances = get_distances(&target, sample_data);
     let pred_class = &distances[0].class;
     let pred_class_name = match pred_class {
