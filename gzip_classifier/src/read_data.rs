@@ -3,28 +3,20 @@ use std::fs;
 use std::io::BufRead;
 use std::io::BufReader;
 
-pub fn main() -> Vec<CleanedNewsSample> {
-    let contents = read_into_vec();
-    let processed_contents = process_ag_data(contents);
-    let combined_contents = combine_text(processed_contents);
-    return combined_contents;
+pub fn main(file_path: &str) -> Vec<ClassifiedText> {
+    let contents = read_into_vec(file_path);
+    let processed_contents = process_raw_data(contents);
+    preview(&processed_contents);
+    return processed_contents;
 }
 
 #[derive(Debug, Eq, Hash, PartialEq)]
-struct NewsSample {
-    class: u8,
-    title: String,
-    intro: String,
-}
-
-#[derive(Debug, Eq, Hash, PartialEq)]
-pub struct CleanedNewsSample {
+pub struct ClassifiedText {
     pub class: u8,
     pub text: String,
 }
 
-fn read_into_vec() -> Vec<String> {
-    let file_path = "hf_ag_train.txt";
+fn read_into_vec(file_path: &str) -> Vec<String> {
     let f = fs::File::open(&file_path).expect(&format!("could not read {}", file_path).to_string());
 
     let buffer = BufReader::new(f);
@@ -36,41 +28,20 @@ fn read_into_vec() -> Vec<String> {
     return raw_content;
 }
 
-fn process_ag_data(raw_content: Vec<String>) -> Vec<NewsSample> {
+fn process_raw_data(raw_content: Vec<String>) -> Vec<ClassifiedText> {
     let mut processed = Vec::new();
 
     for line in raw_content.iter() {
-        let mut parts = line.splitn(3, ',');
-        let class = parts.next().unwrap().trim_matches('"').as_bytes()[0] - b'0';
-        let title = parts.next().unwrap().trim_matches('"').to_string();
-        let intro = parts.next().unwrap().trim_matches('"').to_string();
-        let sample = NewsSample {
-            class,
-            title,
-            intro,
-        };
-        processed.push(sample);
+        let mut parts = line.splitn(2, ',');
+        let class = parts.next().unwrap().trim_matches('"').trim().as_bytes()[0] - b'0';
+        let text = parts.next().unwrap().trim_matches('"').trim().to_string();
+        processed.push(ClassifiedText { class, text });
     }
 
     return processed;
 }
 
-fn combine_text(contents: Vec<NewsSample>) -> Vec<CleanedNewsSample> {
-    let mut combined = Vec::new();
-
-    for sample in contents.iter() {
-        let text = format!("{} {}", sample.title, sample.intro);
-        let cleaned_sample = CleanedNewsSample {
-            class: sample.class,
-            text,
-        };
-        combined.push(cleaned_sample);
-    }
-
-    return combined;
-}
-
-fn preview(contents: &Vec<CleanedNewsSample>) {
+fn preview(contents: &Vec<ClassifiedText>) {
     for c in contents.iter().take(5) {
         println!("{:?}", c);
     }
