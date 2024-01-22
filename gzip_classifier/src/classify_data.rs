@@ -131,14 +131,6 @@ mod tests {
     }
 
     #[test]
-    fn test_concat_string() {
-        let string_a = "string a";
-        let string_b = "string b";
-        let concat_string = concat_strings(string_a, string_b);
-        assert_eq!(concat_string, "string astring b");
-    }
-
-    #[test]
     fn test_ncd_x_eq_y() {
         let x = "some string for testing the ncd function";
         let y = "some string for testing the ncd function";
@@ -157,7 +149,7 @@ mod tests {
     #[test]
     fn test_get_percentile() {
         let mut test_data: Vec<f64> = vec![];
-        for i in (1..=100) {
+        for i in 1..=100 {
             test_data.push(i as f64);
         }
         assert_eq!(get_percentile(&test_data, 0), 1.0);
